@@ -1,5 +1,5 @@
 # BabyMon
-**BabyMon** is a motion-sensing, temperature-detecting, night-vision-capable video surveillance.
+**BabyMon** is a motion-sensing, temperature-detecting, night-vision-capable video surveillance baby monitor.
 
 ## Hardware Requirements
 In order for this project to run properly, you must have the following hardware:
