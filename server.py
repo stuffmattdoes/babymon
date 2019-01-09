@@ -4,18 +4,7 @@ import logging
 import socketserver
 from threading import Condition
 from http import server
-
-PAGE="""\
-<html>
-<head>
-<title>picamera MJPEG streaming demo</title>
-</head>
-<body>
-<h1>PiCamera MJPEG Streaming Demo</h1>
-<img src="stream.mjpg" width="640" height="480" />
-</body>
-</html>
-"""
+from os import curdir, sep
 
 class StreamingOutput(object):
     def __init__(self):
@@ -37,16 +26,14 @@ class StreamingOutput(object):
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
-            self.send_response(301)
-            self.send_header('Location', '/index.html')
-            self.end_headers()
-        elif self.path == '/index.html':
-            content = PAGE.encode('utf-8')
+            index = 'index.html'
+            f = open(curdir + sep + index)
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
-            self.send_header('Content-Length', len(content))
+            # self.send_header('Content-Length', len(content))
             self.end_headers()
-            self.wfile.write(content)
+            self.wfile.write(f.read())
+            f.close()
         elif self.path == '/stream.mjpg':
             self.send_response(200)
             self.send_header('Age', 0)
@@ -72,6 +59,40 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
         else:
             self.send_error(404)
             self.end_headers()
+
+        # try:
+		# 	#Check the file extension required and
+		# 	#set the right mime type
+
+		# 	sendReply = False
+		# 	if self.path.endswith('.html'):
+		# 		mimetype='text/html'
+		# 		sendReply = True
+		# 	if self.path.endswith('.jpg'):
+		# 		mimetype='image/jpg'
+		# 		sendReply = True
+		# 	if self.path.endswith('.gif'):
+		# 		mimetype='image/gif'
+		# 		sendReply = True
+		# 	if self.path.endswith('.js'):
+		# 		mimetype='application/javascript'
+		# 		sendReply = True
+		# 	if self.path.endswith('.css'):
+		# 		mimetype='text/css'
+		# 		sendReply = True
+
+		# 	if sendReply == True:
+		# 		#Open the static file requested and send it
+		# 		f = open(curdir + sep + self.path) 
+		# 		self.send_response(200)
+		# 		self.send_header('Content-type',mimetype)
+		# 		self.end_headers()
+		# 		self.wfile.write(f.read())
+		# 		f.close()
+		# 	return
+
+		# except IOError:
+		# 	self.send_error(404,'File Not Found: %s' % self.path)
 
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
