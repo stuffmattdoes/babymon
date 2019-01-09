@@ -27,7 +27,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             index = 'index.html'
-            f = open(curdir + sep + index)
+            print(curdir + sep + index)
+            f = open(curdir + sep + index, 'rb')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
             # self.send_header('Content-Length', len(content))
