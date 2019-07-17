@@ -4,15 +4,17 @@ import logging
 import socketserver
 from threading import Condition
 from http import server
-from os import curdir, sep
+import os
 
 class StreamingOutput(object):
     def __init__(self):
         self.frame = None
         self.buffer = io.BytesIO()
         self.condition = Condition()
-
+        # print(vars(object))
+        
     def write(self, buf):
+        # print('write!', buf)        
         if buf.startswith(b'\xff\xd8'):
             # New frame, copy the existing buffer's content and notify all
             # clients it's available
@@ -27,11 +29,11 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             index = 'index.html'
-            print(curdir + sep + index)
-            f = open(curdir + sep + index, 'rb')
+            # print(os.curdir + os.sep + index)
+            f = open(os.curdir + os.sep + index, 'rb')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
-            # self.send_header('Content-Length', len(content))
+            self.send_header('Content-Length', os.path.getsize(index))
             self.end_headers()
             self.wfile.write(f.read())
             f.close()
@@ -99,13 +101,13 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
+with picamera.PiCamera(framerate=24, resolution='640x480') as camera:
     output = StreamingOutput()
-    camera.rotation = -90
+    camera.rotation = 90
     camera.start_recording(output, format='mjpeg')
     
     try:
-        address = ('', 8000)
+        address = ('', 80)
         server = StreamingServer(address, StreamingHandler)
         server.serve_forever()
     finally:
