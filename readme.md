@@ -18,7 +18,7 @@ In order for this project to run properly, you must have the following hardware:
 2. In command line, run `python3 server.py` and visit `<RaspberryPiIP>` in your browser!
 * Note - `<RaspberryPiIP>` should be your raspberry pi's IP address - such as `192.168.1.24`. ALternatively, you can access your Raspberry Pi at `<hostname>.local`, where `hostname` is whatever you've configured on your Raspberry Pi (`raspberrypi` by default). More on that [here](https://thepihut.com/blogs/raspberry-pi-tutorials/1966 8676-renaming-your-raspberry-pi-the-hostname).
 
-### Run BabyMon on Pi startup
+### Run & Update BabyMon on Pi startup
 I want my baby monitor to run automatically each time I plug in the Raspberry Pi, that way I don't have to manually VNC in and run the script. There are a few ways to automatically run scripts on boot:
 - Adding a line in `rc.local`
 - Adding a line in `.bashrc`
@@ -29,7 +29,13 @@ I want my baby monitor to run automatically each time I plug in the Raspberry Pi
 I've opted for the `rc.local` method. You can read more on accomplishing the other methods [here](https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/)
 
 While logged into your Pi in terminal, edit `/etc/rc.local` with the following line:
-`cd /home/pi/path/to/babymon && python3 server.py &`
+
+```
+cd /home/pi/path/to/babymon
+git pull
+python3 server.py &
+```
+
 Since the contents of `rc.local` are executed on system boot, our baby monitor script will run! Note the `&` at the end of the command. This allows us to fork our baby monitor process since it runs an infinite loop, which would prevent the `rc.local` script from proceeding its execution.
 
 ## Resources

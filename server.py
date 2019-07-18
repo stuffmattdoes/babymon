@@ -1,23 +1,56 @@
-import io
-import picamera
+from http import server
+from io import BytesIO
 import logging
+# import numpy as np
+import os
+# import pyaudio
+import picamera
 import socketserver
 from threading import Condition
-from http import server
-import os
 
-class StreamingOutput(object):
+# Example from https://picamera.readthedocs.io/en/release-1.13/recipes2.html#web-streaming
+
+# chunk=4096
+# RATE=44100
+
+# p = pyaudio.PyAudio()
+
+# # input stream setup
+# stream = p.open(format = pyaudio.paInt16, rate = RATE, channels = 1, input_device_index = 2, input = True, frames_per_buffer = chunk)
+
+# # output stream setup
+# player = p.open(format = pyaudio.paInt16, rate = RATE, channels = 1, output = True, frames_per_buffer = chunk)
+
+# # Used to continuously stream audio
+# while True:
+#     data = np.fromstring(stream.read(chunk, exception_on_overflow = False), dtype = np.int16)
+#     player.write(data, chunk)
+    
+# closes streams
+# stream.stop_stream()
+# stream.close()
+# p.terminate
+
+class AudioOutput(object):
+    def __init__(self):
+        self.buffer = BytesIO()
+        self.condition = Condition()
+
+    def write(self, buf):
+        return
+
+class VideoOutput(object):
     def __init__(self):
         self.frame = None
-        self.buffer = io.BytesIO()
+        self.buffer = BytesIO()
         self.condition = Condition()
         # print(vars(object))
         
     def write(self, buf):
         # print('write!', buf)        
         if buf.startswith(b'\xff\xd8'):
-            # New frame, copy the existing buffer's content and notify all
-            # clients it's available
+            # New frame, copy the existing buffer's content 
+            # and notify all clients it's available
             self.buffer.truncate()
             with self.condition:
                 self.frame = self.buffer.getvalue()
@@ -37,6 +70,14 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(f.read())
             f.close()
+        elif self.path == '/audio.wav':
+            self.send_response(200)
+            self.send_header('Age', 0)
+            self.send_header('Cache-Control', 'no-cache, private')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
+            self.end_headers()
+
         elif self.path == '/stream.mjpg':
             self.send_response(200)
             self.send_header('Age', 0)
@@ -46,9 +87,9 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             try:
                 while True:
-                    with output.condition:
-                        output.condition.wait()
-                        frame = output.frame
+                    with videoOut.condition:
+                        videoOut.condition.wait()
+                        frame = videoOut.frame
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')
                     self.send_header('Content-Length', len(frame))
@@ -101,10 +142,10 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-with picamera.PiCamera(framerate=24, resolution='640x480') as camera:
-    output = StreamingOutput()
+with picamera.PiCamera(framerate = 24, resolution = '640x480') as camera:
+    videoOut = VideoOutput()
     camera.rotation = 90
-    camera.start_recording(output, format='mjpeg')
+    camera.start_recording(videoOut, format = 'mjpeg')
     
     try:
         address = ('', 80)
