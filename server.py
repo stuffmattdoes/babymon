@@ -33,7 +33,7 @@ from threading import Condition
 
 class AudioOutput(object):
     def __init__(self):
-        self.buffer = BytesIO()
+        self.buffer = BytesIO()       
         self.condition = Condition()
 
     def write(self, buf):

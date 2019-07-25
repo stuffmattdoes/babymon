@@ -26,30 +26,21 @@ I want my baby monitor to run automatically each time I plug in the Raspberry Pi
 - systemd
 - crontab
 
-I've opted for the `rc.local` method. You can read more on accomplishing the other methods [here](https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/)
+Because I require a network connection, I've opted for the `init.d` method. You can read more on accomplishing the other methods [here](https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/).
 
-While logged into your Pi in terminal, edit `/etc/rc.local` with the following line:
-
-```
-cd /home/pi/path/to/babymon
-git pull
-python3 server.py &
-```
-
-Since the contents of `rc.local` are executed on system boot, our baby monitor script will run! Note the `&` at the end of the command. This allows us to fork our baby monitor process since it runs an infinite loop, which would prevent the `rc.local` script from proceeding its execution.
+While logged into your Pi in terminal, navigate to `/etc/init.d`, create a file named `babymon` that looks like the following:
 
 ## Resources
 [PiCamera Web Streaming](https://picamera.readthedocs.io/en/release-1.13/recipes2.html#web-streaming)
 
 ## Todo
 1. ~~Stream video from Pi to network upon client request~~
-2. 
-
-2. Separate camera code from network server code
+2. Auto-update on device restart (`git pull` on boot?)
+3. Audio streaming
+4. Temperature sensor
+5. Motion detection
+6. Separate camera code from network server code
 + Have Pi cameras feed video to central Pi server
 + Central Pi server streams to client upon request
-3. Sound
-4. Temperature
-5. Motion capture
 + If motion is detected, capture video feed on server (store for...1 week?)
 + If connected to a client, video is streamed regardless of motion
